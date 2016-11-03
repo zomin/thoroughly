@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	   http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
+    <context:property-placeholder location="classpath*:properties/*.properties"/>
+
+    <beans profile="default">
+        <security:user-service id="userDetailsService">
+            <security:user name="${security.basic.admin.user}" password="${security.basic.admin.password}" authorities="ROLE_ADMIN, ROLE_RO" />
+            <security:user name="${security.basic.read_only.user}" password="${security.basic.read_only.password}" authorities="ROLE_RO" />
+            <security:user name="${security.basic.marketplaceintegration.user}" password="${security.basic.marketplaceintegration.password}" authorities="ROLE_MK" />
+        </security:user-service>
+
+
+
+        <security:authentication-manager alias="authenticationManager">
+            <security:authentication-provider user-service-ref="userDetailsService"/>
+        </security:authentication-manager>
+
+
+        <!-- Secured URLs -->
+        <security:http pattern="/biz/trade/**" use-expressions="true" authentication-manager-ref="authenticationManager">
+            <security:intercept-url pattern="/biz/trade/**" method="POST" access="hasAnyRole('ROLE_ADMIN','ROLE_MK')"  />
+            <!-- 			<security:intercept-url pattern="/v1/marketplaceintegration/**" method="POST" access="hasRole('ROLE_DATAHUB_MK')"  />  -->
+            <security:http-basic />
+        </security:http>
+    </beans>
+</beans>
